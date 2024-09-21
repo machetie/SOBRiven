@@ -23,8 +23,20 @@ source_from_github "scripts/utils/os_detection.sh"
 source_from_github "scripts/utils/system_checks.sh"
 source_from_github "scripts/utils/docker_setup.sh"
 
-# Function to display the menu and get user selection
-display_menu() {
+# Function to display the main menu and get user selection
+display_main_menu() {
+    local cmd=(dialog --menu "Media App Installer" 15 60 3)
+    local options=(
+        1 "Install/Manage Apps"
+        2 "Maintenance"
+        3 "Exit"
+    )
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+    echo $choice
+}
+
+# Function to display the app installation menu and get user selection
+display_install_menu() {
     local options=(
         "Plex" "Media server for organizing and streaming your media" off
         "Jellyfin" "Open source media server" off
@@ -290,6 +302,61 @@ install_apps() {
     done
 }
 
+# Function to perform maintenance checks
+perform_maintenance() {
+    echo "Performing maintenance checks..."
+    
+    # Check container permissions
+    echo "Checking container permissions:"
+    docker ps -a --format '{{.Names}}' | while read -r container; do
+        permissions=$(docker inspect --format='{{.HostConfig.Privileged}}' "$container")
+        echo "$container: Privileged=$permissions"
+    done
+
+    # Check container interconnection
+    echo "Checking container interconnection:"
+    docker network inspect bridge --format='{{range .Containers}}{{.Name}} {{end}}'
+    
+    # Check library folder permissions and container access
+    echo "Checking library folder permissions and container access:"
+    local library_folder=$(dialog --stdout --inputbox "Enter the path to your media library folder:" 0 0)
+    
+    if [ -d "$library_folder" ]; then
+        echo "Library folder permissions:"
+        ls -ld "$library_folder"
+        
+        # Check Plex container access
+        if docker ps -q -f name=plex &>/dev/null; then
+            echo "Checking Plex container access to library folder:"
+            docker exec plex ls -l "$library_folder" &>/dev/null
+            if [ $? -eq 0 ]; then
+                echo "Plex container can access the library folder."
+            else
+                echo "Plex container cannot access the library folder."
+            fi
+        else
+            echo "Plex container is not running."
+        fi
+        
+        # Check Riven container access
+        if docker ps -q -f name=riven &>/dev/null; then
+            echo "Checking Riven container access to library folder:"
+            docker exec riven ls -l "$library_folder" &>/dev/null
+            if [ $? -eq 0 ]; then
+                echo "Riven container can access the library folder."
+            else
+                echo "Riven container cannot access the library folder."
+            fi
+        else
+            echo "Riven container is not running."
+        fi
+    else
+        echo "Library folder does not exist or is not accessible."
+    fi
+
+    dialog --title "Maintenance Results" --msgbox "Maintenance checks completed. Please review the output in the terminal." 10 60
+}
+
 # Main script execution
 main() {
     local os=$(detect_os)
@@ -307,15 +374,30 @@ main() {
     check_system
     create_docker_volumes
     
-    local selected_apps=$(display_menu)
-    
-    if [ $? -eq 0 ] && [ -n "$selected_apps" ]; then
-        install_apps $selected_apps
-        echo "Installation completed successfully."
-    else
-        echo "No apps selected or user cancelled. Exiting."
-        exit 0
-    fi
+    while true; do
+        local main_choice=$(display_main_menu)
+        case $main_choice in
+            1)
+                local selected_apps=$(display_install_menu)
+                if [ $? -eq 0 ] && [ -n "$selected_apps" ]; then
+                    install_apps $selected_apps
+                    echo "Installation completed successfully."
+                else
+                    echo "No apps selected or user cancelled."
+                fi
+                ;;
+            2)
+                perform_maintenance
+                ;;
+            3)
+                echo "Exiting."
+                exit 0
+                ;;
+            *)
+                echo "Invalid choice. Please try again."
+                ;;
+        esac
+    done
 }
 
 # Run the main function

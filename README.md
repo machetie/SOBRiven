@@ -11,6 +11,7 @@ This script provides a modular and customizable way to install various media app
 - Allows customization of installation parameters through a configuration file.
 - Supports Riven-specific environment variables for advanced configuration.
 - Checks for existing containers and provides options for managing them.
+- Includes a maintenance feature to check container permissions, interconnections, and library folder access.
 
 ## Prerequisites
 
@@ -58,7 +59,10 @@ This script provides a modular and customizable way to install various media app
    sudo ./install_media_apps.sh
    ```
 
-5. Follow the on-screen prompts to select the applications you want to install and provide any necessary information.
+5. Follow the on-screen prompts to select the desired action:
+   - Install/Manage Apps: Select and install media applications.
+   - Maintenance: Check container permissions, interconnections, and library folder access.
+   - Exit: Close the script.
 
 ## Configuration
 
@@ -87,7 +91,7 @@ When installing Riven, you will be prompted to configure these variables or use 
 
 ## Container Management
 
-The script now includes features to manage existing containers:
+The script includes features to manage existing containers:
 
 - Before installing an application, the script checks if a container for that application already exists.
 - If an existing container is found, you have the following options:
@@ -96,6 +100,22 @@ The script now includes features to manage existing containers:
   3. Update the permissions of the existing container (switch between normal and privileged mode).
 
 This feature allows for better management of your Docker containers and provides more flexibility in maintaining your media server setup.
+
+## Maintenance
+
+The maintenance feature allows you to:
+
+- Check container permissions: Displays whether each container is running in privileged mode or not.
+- Check container interconnection: Shows which containers are connected to the default Docker bridge network.
+- Check library folder permissions: Verifies the permissions of the specified media library folder.
+- Check container access to library folder: Confirms if the Plex and Riven containers can access the media library folder.
+
+To access the maintenance feature:
+1. Select "Maintenance" from the main menu when running the script.
+2. When prompted, enter the path to your media library folder.
+3. Review the results in the terminal output.
+
+This feature helps ensure that your containers have the correct permissions and can access the necessary files for proper operation.
 
 ## Logs
 
@@ -109,6 +129,7 @@ If you encounter any issues during the installation:
 2. Ensure that Docker is installed and running correctly on your system.
 3. Verify that you have sufficient permissions to run Docker commands.
 4. Make sure you have a stable internet connection.
+5. If containers cannot access the library folder, check the folder permissions and ensure the correct paths are mounted in the Docker containers.
 
 ### Arch-based Systems
 
