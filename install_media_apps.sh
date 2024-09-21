@@ -66,7 +66,7 @@ display_install_menu() {
         "Riven" "Media management and automation tool" off
         "Riven-Frontend" "Web interface for Riven" off
         "Annie" "Video downloader" off
-        "Zilean" "Subtitle downloader and manager" off
+        "Zilean" "DMM sourced arr-less searching for Riven" off
         "Postgres" "Database for storing media metadata" off
         "PgAdmin" "Web-based PostgreSQL administration tool" off
         "Overseerr" "Request management and media discovery tool" off
