@@ -1,0 +1,12 @@
+Detected OS: Arch-based
+User with UID 1000 exists.
+Group with GID 1000 exists.
+Checking dependencies for Arch-based...
+All required dependencies are already installed.
+Checking system settings and permissions...
+Available disk space: 1.8T
+System check completed successfully.
+Docker volume 'zilean_data' already exists.
+Docker volume 'pg-data' already exists.
+Docker volume 'pgadmin-data' already exists.
+No apps selected or user cancelled. Exiting.
