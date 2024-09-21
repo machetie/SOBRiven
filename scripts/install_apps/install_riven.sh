@@ -1,5 +1,21 @@
 #!/bin/bash
 
+setup_library_folder() {
+    local mount_point="$1"
+    local library_path="$2"
+
+    echo "Setting up Riven library folder..."
+
+    # Create the library folder
+    sudo mkdir -p "$library_path"
+
+    # Set permissions for the library folder
+    sudo chown -R 1000:1000 "$library_path"
+    sudo chmod -R 755 "$library_path"
+
+    echo "Library folder setup complete."
+}
+
 install_riven() {
     local mount_point="$1"
     local timezone="$2"
@@ -42,6 +58,9 @@ install_riven() {
                    -e RIVEN_SCRAPING_TORRENTIO_ENABLED=$RIVEN_SCRAPING_TORRENTIO_ENABLED \
                    -e RIVEN_SCRAPING_ZILEAN_ENABLED=$RIVEN_SCRAPING_ZILEAN_ENABLED \
                    -e RIVEN_SCRAPING_ZILEAN_URL=$RIVEN_SCRAPING_ZILEAN_URL"
+
+        # Setup library folder
+        setup_library_folder "$mount_point" "$RIVEN_SYMLINK_LIBRARY_PATH"
     fi
 
     docker run -d \
@@ -54,6 +73,7 @@ install_riven() {
         $riven_env \
         -v "./data:/riven/data" \
         -v "$mount_point:/mnt" \
+        -v "$RIVEN_SYMLINK_LIBRARY_PATH:$RIVEN_SYMLINK_LIBRARY_PATH" \
         --health-cmd "curl -s http://localhost:8080 >/dev/null || exit 1" \
         --health-interval 30s \
         --health-timeout 10s \
