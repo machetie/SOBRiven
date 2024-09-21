@@ -65,7 +65,7 @@ display_install_menu() {
         "Jellyfin" "Open source media server" off
         "Riven" "Media management and automation tool" off
         "Riven-Frontend" "Web interface for Riven" off
-        "Annie" "Video downloader" off
+        "Annie" "Alternative Frontend for Riven" off
         "Zilean" "DMM sourced arr-less searching for Riven" off
         "Postgres" "Database for storing media metadata" off
         "PgAdmin" "Web-based PostgreSQL administration tool" off
