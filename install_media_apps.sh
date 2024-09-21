@@ -23,9 +23,32 @@ source_from_github "scripts/utils/os_detection.sh"
 source_from_github "scripts/utils/system_checks.sh"
 source_from_github "scripts/utils/docker_setup.sh"
 
+# Function to set Catppuccin dark color scheme
+set_catppuccin_colors() {
+    export NEWT_COLORS='
+    root=,#1e1e2e
+    window=,#1e1e2e
+    border=#cdd6f4,#1e1e2e
+    title=#f5e0dc,#1e1e2e
+    button=#1e1e2e,#cba6f7
+    actbutton=#1e1e2e,#f5c2e7
+    compactbutton=#1e1e2e,#cba6f7
+    checkbox=#cdd6f4,#1e1e2e
+    actcheckbox=#f5e0dc,#1e1e2e
+    entry=#cdd6f4,#313244
+    disentry=#6c7086,#313244
+    listbox=#cdd6f4,#1e1e2e
+    actlistbox=#f5e0dc,#313244
+    sellistbox=#1e1e2e,#cba6f7
+    actsellistbox=#1e1e2e,#f5c2e7
+    textbox=#cdd6f4,#1e1e2e
+    acttextbox=#f5e0dc,#313244
+    '
+}
+
 # Function to display the main menu and get user selection
 display_main_menu() {
-    local cmd=(dialog --menu "Media App Installer" 15 60 3)
+    local cmd=(dialog --colors --menu "Media App Installer" 15 60 3)
     local options=(
         1 "Install/Manage Apps"
         2 "Maintenance"
@@ -49,7 +72,7 @@ display_install_menu() {
         "Overseerr" "Request management and media discovery tool" off
     )
 
-    local cmd=(dialog --separate-output --checklist "Select media apps to install:" 22 76 16)
+    local cmd=(dialog --colors --separate-output --checklist "Select media apps to install:" 22 76 16)
     local choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     
     echo "$choices"
@@ -156,14 +179,14 @@ install_dependencies() {
 
 # Function to get additional settings
 get_settings() {
-    local mount_point=$(dialog --stdout --inputbox "Enter mount point for media:" 0 0)
-    local timezone=$(dialog --stdout --inputbox "Enter timezone (e.g., America/New_York):" 0 0 "America/New_York")
-    local postgres_password=$(dialog --stdout --passwordbox "Enter PostgreSQL password:" 0 0)
-    local pgadmin_email=$(dialog --stdout --inputbox "Enter PgAdmin email:" 0 0 "postgres@example.com")
-    local pgadmin_password=$(dialog --stdout --passwordbox "Enter PgAdmin password:" 0 0)
-    local riven_real_debrid_api_key=$(dialog --stdout --passwordbox "Enter Real-Debrid API Key for Riven:" 0 0)
-    local riven_plex_token=$(dialog --stdout --passwordbox "Enter Plex Token for Riven:" 0 0)
-    local riven_overseerr_api_key=$(dialog --stdout --passwordbox "Enter Overseerr API Key for Riven:" 0 0)
+    local mount_point=$(dialog --colors --stdout --inputbox "Enter mount point for media:" 0 0)
+    local timezone=$(dialog --colors --stdout --inputbox "Enter timezone (e.g., America/New_York):" 0 0 "America/New_York")
+    local postgres_password=$(dialog --colors --stdout --passwordbox "Enter PostgreSQL password:" 0 0)
+    local pgadmin_email=$(dialog --colors --stdout --inputbox "Enter PgAdmin email:" 0 0 "postgres@example.com")
+    local pgadmin_password=$(dialog --colors --stdout --passwordbox "Enter PgAdmin password:" 0 0)
+    local riven_real_debrid_api_key=$(dialog --colors --stdout --passwordbox "Enter Real-Debrid API Key for Riven:" 0 0)
+    local riven_plex_token=$(dialog --colors --stdout --passwordbox "Enter Plex Token for Riven:" 0 0)
+    local riven_overseerr_api_key=$(dialog --colors --stdout --passwordbox "Enter Overseerr API Key for Riven:" 0 0)
     
     echo "$mount_point|$timezone|$postgres_password|$pgadmin_email|$pgadmin_password|$riven_real_debrid_api_key|$riven_plex_token|$riven_overseerr_api_key"
 }
@@ -212,7 +235,7 @@ check_existing_containers() {
         local permissions=$(docker inspect --format='{{.HostConfig.Privileged}}' $container_name)
         echo "Container permissions: $permissions"
         
-        local choice=$(dialog --stdout --menu "Container $container_name already exists. What would you like to do?" 15 60 4 \
+        local choice=$(dialog --colors --stdout --menu "Container $container_name already exists. What would you like to do?" 15 60 4 \
             1 "Skip installation" \
             2 "Reinstall (delete existing and create new)" \
             3 "Update permissions")
@@ -228,7 +251,7 @@ check_existing_containers() {
                 return 0
                 ;;
             3)
-                local new_permissions=$(dialog --stdout --menu "Select new permissions for $container_name:" 15 60 2 \
+                local new_permissions=$(dialog --colors --stdout --menu "Select new permissions for $container_name:" 15 60 2 \
                     1 "Normal" \
                     2 "Privileged")
                 
@@ -319,7 +342,7 @@ perform_maintenance() {
     
     # Check library folder permissions and container access
     echo "Checking library folder permissions and container access:"
-    local library_folder=$(dialog --stdout --inputbox "Enter the path to your media library folder:" 0 0)
+    local library_folder=$(dialog --colors --stdout --inputbox "Enter the path to your media library folder:" 0 0)
     
     if [ -d "$library_folder" ]; then
         echo "Library folder permissions:"
@@ -354,11 +377,12 @@ perform_maintenance() {
         echo "Library folder does not exist or is not accessible."
     fi
 
-    dialog --title "Maintenance Results" --msgbox "Maintenance checks completed. Please review the output in the terminal." 10 60
+    dialog --colors --title "Maintenance Results" --msgbox "Maintenance checks completed. Please review the output in the terminal." 10 60
 }
 
 # Main script execution
 main() {
+    set_catppuccin_colors
     local os=$(detect_os)
     echo "Detected OS: $os"
     

@@ -9,4 +9,13 @@ System check completed successfully.
 Docker volume 'zilean_data' already exists.
 Docker volume 'pg-data' already exists.
 Docker volume 'pgadmin-data' already exists.
-No apps selected or user cancelled. Exiting.
+No apps selected or user cancelled.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Invalid choice. Please try again.
+Exiting.
