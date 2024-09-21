@@ -6,10 +6,22 @@
 
 set -e
 
+# Base URL for raw GitHub content
+BASE_URL="https://github.com/machetie/SOBRiven/raw/main/"
+
+# Function to download and source a script from GitHub
+source_from_github() {
+    local script_path="$1"
+    local temp_file=$(mktemp)
+    wget -q -O "$temp_file" "${BASE_URL}${script_path}"
+    source "$temp_file"
+    rm "$temp_file"
+}
+
 # Source utility scripts
-source scripts/utils/os_detection.sh
-source scripts/utils/system_checks.sh
-source scripts/utils/docker_setup.sh
+source_from_github "scripts/utils/os_detection.sh"
+source_from_github "scripts/utils/system_checks.sh"
+source_from_github "scripts/utils/docker_setup.sh"
 
 # Function to display the menu and get user selection
 display_menu() {
@@ -154,39 +166,39 @@ install_apps() {
         echo "Installing $app..."
         case $app in
             "Plex")
-                source scripts/install_apps/install_plex.sh
+                source_from_github "scripts/install_apps/install_plex.sh"
                 install_plex "$mount_point" "$timezone"
                 ;;
             "Jellyfin")
-                source scripts/install_apps/install_jellyfin.sh
+                source_from_github "scripts/install_apps/install_jellyfin.sh"
                 install_jellyfin "$mount_point" "$timezone"
                 ;;
             "Riven")
-                source scripts/install_apps/install_riven.sh
+                source_from_github "scripts/install_apps/install_riven.sh"
                 install_riven "$mount_point" "$timezone" "$riven_real_debrid_api_key" "$riven_plex_token" "$riven_overseerr_api_key"
                 ;;
             "Riven-Frontend")
-                source scripts/install_apps/install_riven_frontend.sh
+                source_from_github "scripts/install_apps/install_riven_frontend.sh"
                 install_riven_frontend "$timezone" "$postgres_password"
                 ;;
             "Annie")
-                source scripts/install_apps/install_annie.sh
+                source_from_github "scripts/install_apps/install_annie.sh"
                 install_annie "$timezone"
                 ;;
             "Zilean")
-                source scripts/install_apps/install_zilean.sh
+                source_from_github "scripts/install_apps/install_zilean.sh"
                 install_zilean "$postgres_password" "$timezone"
                 ;;
             "Postgres")
-                source scripts/install_apps/install_postgres.sh
+                source_from_github "scripts/install_apps/install_postgres.sh"
                 install_postgres "$postgres_password"
                 ;;
             "PgAdmin")
-                source scripts/install_apps/install_pgadmin.sh
+                source_from_github "scripts/install_apps/install_pgadmin.sh"
                 install_pgadmin "$pgadmin_email" "$pgadmin_password" "$postgres_password"
                 ;;
             "Overseerr")
-                source scripts/install_apps/install_overseerr.sh
+                source_from_github "scripts/install_apps/install_overseerr.sh"
                 install_overseerr "$timezone"
                 ;;
         esac
