@@ -10,6 +10,7 @@ This script provides a modular and customizable way to install various media app
 - Provides a user-friendly dialog-based menu for selecting applications to install.
 - Allows customization of installation parameters through a configuration file.
 - Supports Riven-specific environment variables for advanced configuration.
+- Checks for existing containers and provides options for managing them.
 
 ## Prerequisites
 
@@ -83,6 +84,18 @@ The `config.sh` file includes Riven-specific environment variables that you can 
 - Plex integration settings
 
 When installing Riven, you will be prompted to configure these variables or use the default values from `config.sh`.
+
+## Container Management
+
+The script now includes features to manage existing containers:
+
+- Before installing an application, the script checks if a container for that application already exists.
+- If an existing container is found, you have the following options:
+  1. Skip the installation of that application.
+  2. Reinstall the application (delete the existing container and create a new one).
+  3. Update the permissions of the existing container (switch between normal and privileged mode).
+
+This feature allows for better management of your Docker containers and provides more flexibility in maintaining your media server setup.
 
 ## Logs
 

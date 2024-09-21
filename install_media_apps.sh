@@ -156,6 +156,85 @@ get_settings() {
     echo "$mount_point|$timezone|$postgres_password|$pgadmin_email|$pgadmin_password|$riven_real_debrid_api_key|$riven_plex_token|$riven_overseerr_api_key"
 }
 
+# Function to check existing containers and their permissions
+check_existing_containers() {
+    local app=$1
+    local container_name
+
+    case $app in
+        "Plex")
+            container_name="plex"
+            ;;
+        "Jellyfin")
+            container_name="jellyfin"
+            ;;
+        "Riven")
+            container_name="riven"
+            ;;
+        "Riven-Frontend")
+            container_name="riven-frontend"
+            ;;
+        "Annie")
+            container_name="annie"
+            ;;
+        "Zilean")
+            container_name="zilean"
+            ;;
+        "Postgres")
+            container_name="postgres"
+            ;;
+        "PgAdmin")
+            container_name="pgadmin"
+            ;;
+        "Overseerr")
+            container_name="overseerr"
+            ;;
+        *)
+            echo "Unknown app: $app"
+            return 1
+            ;;
+    esac
+
+    if docker ps -a --format '{{.Names}}' | grep -q "^${container_name}$"; then
+        echo "Container $container_name already exists."
+        local permissions=$(docker inspect --format='{{.HostConfig.Privileged}}' $container_name)
+        echo "Container permissions: $permissions"
+        
+        local choice=$(dialog --stdout --menu "Container $container_name already exists. What would you like to do?" 15 60 4 \
+            1 "Skip installation" \
+            2 "Reinstall (delete existing and create new)" \
+            3 "Update permissions")
+        
+        case $choice in
+            1)
+                echo "Skipping installation of $app"
+                return 1
+                ;;
+            2)
+                echo "Removing existing container $container_name"
+                docker rm -f $container_name
+                return 0
+                ;;
+            3)
+                local new_permissions=$(dialog --stdout --menu "Select new permissions for $container_name:" 15 60 2 \
+                    1 "Normal" \
+                    2 "Privileged")
+                
+                if [ "$new_permissions" = "2" ]; then
+                    echo "Updating $container_name to privileged mode"
+                    docker update --privileged $container_name
+                else
+                    echo "Updating $container_name to normal mode"
+                    docker update --privileged=false $container_name
+                fi
+                return 1
+                ;;
+        esac
+    fi
+    
+    return 0
+}
+
 # Function to install selected apps
 install_apps() {
     local apps=("$@")
@@ -163,46 +242,51 @@ install_apps() {
     IFS='|' read -r mount_point timezone postgres_password pgadmin_email pgadmin_password riven_real_debrid_api_key riven_plex_token riven_overseerr_api_key <<< "$settings"
     
     for app in "${apps[@]}"; do
-        echo "Installing $app..."
-        case $app in
-            "Plex")
-                source_from_github "scripts/install_apps/install_plex.sh"
-                install_plex "$mount_point" "$timezone"
-                ;;
-            "Jellyfin")
-                source_from_github "scripts/install_apps/install_jellyfin.sh"
-                install_jellyfin "$mount_point" "$timezone"
-                ;;
-            "Riven")
-                source_from_github "scripts/install_apps/install_riven.sh"
-                install_riven "$mount_point" "$timezone" "$riven_real_debrid_api_key" "$riven_plex_token" "$riven_overseerr_api_key"
-                ;;
-            "Riven-Frontend")
-                source_from_github "scripts/install_apps/install_riven_frontend.sh"
-                install_riven_frontend "$timezone" "$postgres_password"
-                ;;
-            "Annie")
-                source_from_github "scripts/install_apps/install_annie.sh"
-                install_annie "$timezone"
-                ;;
-            "Zilean")
-                source_from_github "scripts/install_apps/install_zilean.sh"
-                install_zilean "$postgres_password" "$timezone"
-                ;;
-            "Postgres")
-                source_from_github "scripts/install_apps/install_postgres.sh"
-                install_postgres "$postgres_password"
-                ;;
-            "PgAdmin")
-                source_from_github "scripts/install_apps/install_pgadmin.sh"
-                install_pgadmin "$pgadmin_email" "$pgadmin_password" "$postgres_password"
-                ;;
-            "Overseerr")
-                source_from_github "scripts/install_apps/install_overseerr.sh"
-                install_overseerr "$timezone"
-                ;;
-        esac
-        echo "$app installed successfully."
+        echo "Checking $app..."
+        if check_existing_containers "$app"; then
+            echo "Installing $app..."
+            case $app in
+                "Plex")
+                    source_from_github "scripts/install_apps/install_plex.sh"
+                    install_plex "$mount_point" "$timezone"
+                    ;;
+                "Jellyfin")
+                    source_from_github "scripts/install_apps/install_jellyfin.sh"
+                    install_jellyfin "$mount_point" "$timezone"
+                    ;;
+                "Riven")
+                    source_from_github "scripts/install_apps/install_riven.sh"
+                    install_riven "$mount_point" "$timezone" "$riven_real_debrid_api_key" "$riven_plex_token" "$riven_overseerr_api_key"
+                    ;;
+                "Riven-Frontend")
+                    source_from_github "scripts/install_apps/install_riven_frontend.sh"
+                    install_riven_frontend "$timezone" "$postgres_password"
+                    ;;
+                "Annie")
+                    source_from_github "scripts/install_apps/install_annie.sh"
+                    install_annie "$timezone"
+                    ;;
+                "Zilean")
+                    source_from_github "scripts/install_apps/install_zilean.sh"
+                    install_zilean "$postgres_password" "$timezone"
+                    ;;
+                "Postgres")
+                    source_from_github "scripts/install_apps/install_postgres.sh"
+                    install_postgres "$postgres_password"
+                    ;;
+                "PgAdmin")
+                    source_from_github "scripts/install_apps/install_pgadmin.sh"
+                    install_pgadmin "$pgadmin_email" "$pgadmin_password" "$postgres_password"
+                    ;;
+                "Overseerr")
+                    source_from_github "scripts/install_apps/install_overseerr.sh"
+                    install_overseerr "$timezone"
+                    ;;
+            esac
+            echo "$app installed successfully."
+        else
+            echo "Skipping $app installation."
+        fi
     done
 }
 
